@@ -1,0 +1,243 @@
+---
+title: "Falsificación de facturas"
+author: "Martín Basualdo"
+date: "Septiembre 2022"
+output:
+    html_document:
+      toc: true
+      toc_depth: 4
+      number_sections: true
+      toc_float: 
+        collapsed: false
+        smooth_scroll: false
+fontsize: 15pt
+sansfont: Georgia
+---
+
+\tableofcontents
+
+```{=html}
+<style>
+body {
+text-align: justify}
+</style>
+```
+# Teoría y contexto
+
+<!-- Existen numerosos motivos para falsificar facturación, recolectados y tipificados por Cobham \& Jamský (2020). "1- abuso de mercado y regulatorio, 2- abuso impositivo, 3- abuso de poder, incluyendo el hurto de fondos estatales y activos, y 4- actuar criminal". Los principales actores son: sector privado (individuos, negocios domésticos y grupos empresarios multinacionales) que lideran las tipificaciones 1, 2 y 3; oficiales del sector público (elegidos y empleados), importantes para las tipificaciones 3 y 4, que incluso podrían estar relacionados a la 1; por último, los grupos criminales (motivados por causas criminales). -->
+
+Existen numerosos motivos para falsificar facturación (entendida como una modificación malintencionada del precio de la transacción), recolectados y tipificados por Cobham & Jamský (2020). Básicamente, el objetivo consta en evadir impuestos (tarifas, derechos de exportación), explotar subsidios, repatriar capital no declarado, evadir controles de capital (como la repatriación de ganancias) y girar capitales provenientes de actividades criminales.
+
+En el caso argentino, en específico. Existe, por un lado, un fuerte incentivo a la sobrefacturación de las importaciones, que pese a que son sujetos de aranceles, dan acceso a los dólares oficiales, a un tipo de cambio de aproximadamente 140 pesos argentinos. En el mientras tanto, el dólar en el mercado paralelo se enuentra a 280 ARS. Esta diferencia, en términos porcentuales, se la conoce como "brecha cambiaria", que ronda el 100% y que, por lo tanto, genera un incentivo monetario a declarar un precio superior al que le corresponde al producto, proceso conocido como "sobrefacturación". Por el otro lado, es conocida la práctica de subfacturar las exportaciones, que se liquidan al tipo de cambio oficial, y que es sujeto de derechos de exportación. En definitiva, el presente esquema de tipo de cambios múltiples puede ser visto como un subsidio al importador y un impuesto al exportador, y como tal, deriva ineludiblemente en un actuar de sobrefacturación de importaciones y de subfacturación de exportaciones, lo que tiene una clara incidencia en la balanza de pagos, en un contexto de fragilidad dada la escasez de reservas internacionales netas.
+
+El actuar mencionado rompe con el concepto de justicia social: la evasión impositiva impide una equidad horizontal en términos tributarios, reduciendo la recaudación destinada a los proyectos de órden nacional como las universades, rutas y autopistas. Al mismo tiempo, genera tanto una inestabilidad económica (al inducir a un drenaje de reservas internacionales de la autoridad monetario) como social dada la propagación de noticias de grandes grupos económicos beneficiándose a costa de las reservas del Banco Central. Lógicamente, es ilegal, penado con medios monetarios y administrativos (como la quita de derechos para el comercio internacional).
+
+# Estimación del monto falsificado
+
+En base a Hong & Pak (2017), existen dos formas de estimar el monto falsificado (la suma de subfacturación y sobrefacturación): el método "P-C" (*Partner-Country*), que compara las estadísticas de dos socios comerciales a nivel agregado (exportaciones e importaciones totales) y a nivel desagregado por transacción (nomenclatura). Esta primera metodología será desarrollada más adelante, pero debe aclararse que los autores la critican en términos teóricos y empíricos. La otra metodología es conocida como "*Price Filter Method*". Resumidamente, toma datos extremadamente desagregados (a nivel transacción), y seleccionando como "márgen razonable de precio de referencia" al rango intercuartílico del precio unitario (dólares/peso neto). Cuando el precio es mayor al rango intercuartílico, es una evidencia de sobrefacturación (si no es un error de procesamiento).
+
+## Price Filter Method: Aplicación para el poroto de soja argentino
+
+El método de filtrado de precio establece límites superiores e inferiores para un rango de valor de mercado "razonable". Utiliza datos nivel transacción, que refleja cada registro de comercio independientemente de lo registrado en el socio comercial. Esto es una gran ventaja, ya que no se requiere el uso de datos de otro país. El problema, sin embargo, es que el precio es generado endógenamente, lo que hace que el ango intercuartílico no sea un criterio objetivo para establecer un rango de precio de referencia. Además, cada producto tiene un rango de heterogeneidad. De todos modos es una aproximación de primer órden, extremadamente útil para detectar transacciones sospechosas, lo que permite identificar individuos falsificando facturas para fugar capital, evadir impuestos o lavar dinero.
+
+Una aplicación inicial es ver qué sucede en el mercado del poroto de soja comercializado por Argentina (NCM 12019000) para los años 2021-2022 (hasta julio). A través del ejercicio se denotan algunas falencias en la metodología planteada por los autores:
+
+-   Descartan la posibilidad de fallas de registro (*outliers*).
+
+-   Descartan las fluctuaciones de los precios de los productos (notable para el caso del poroto de soja).
+
+De hecho, en el lado de las exportaciones se visualizan tres valores extraordinarios cuyos pesos netos no se asemejan a valores "razonables". A continuación, se presenta una tabla con los datos utilizados, donde cada fila representa a una transacción a su fecha de oficialización. La columna "soja_bm" es el precio por tonelada difundida por el Banco Mundial. Los tres *outliers* mencionados serán descartados.
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+exportaciones_soja <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "soja outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(exportaciones_soja, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+Posteriormente, se calculó la diferencia del precio declarado con el de referencia publicado por el Banco Mundial. Gráficamente se podrá ver cada transacción desagregada a nivel país. Debido a la gran diversidad de países de destino, los colores se repiten, pero la herramienta utilizada para presentar el informe permite filtrar y analizar cada país y transacción por separado. Se concluye un comportamiento extraño en los despachos destinados a Brasil y Paraguay.
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref soja pais.html")
+```
+
+Sin embargo, en orden de agrupar las operaciones a una determinada frecuencia, para evitar cuestiones como la demora en el registro por ejemplo, los autores Hong & Pak (2017) observan los datos agrupados sin más proceso. Esto puede realizarse mediante el uso del supuesto de estabilidad de precios, que es insostenible para el caso de los productos primarios, como el poroto de soja. En este sentido, es recomendable actualizar los precios para permitir la estabilidad.
+
+$$Precio_{final}=Precio_t*\frac{Precio\ banco\ mundial_{final}}{Precio\ banco\ mundial_{t}}$$
+
+Gráficamente, la diferencia es notable. Primero se presenta la versión sin capitalizar el precio, segundo, el capitalizado.
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo soja boxplot sin capitalizar.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo soja boxplot capitalizado.html")
+```
+
+Finalmente, el método utilizado define como precio de referencia "razonable" al rango intercuartílico. Los valores por fuera de dicho rango da la sospecha de falsificación de exportaciones, tanto subfacturadas como sobrefacturadas. Hay que ten en cuenta, sin embargo, que el rango es determinado endógenamente, y que por lo tanto, si existe un sesgo a la subfacturación, podría clasificar un mayor número de firmas sobrefacturando de lo que se debería. En este sentido, vale la pena recordar que la sobrefacturación puede esta guiada por un interés de fugar capitales, repatriarlos, "blanquear" fondos ilícitos.
+
+<!-- Las transacciones bajo sospecha se verán en la siguiente tabla: -->
+
+<!-- ```{r echo=F, message=FALSE, warning=FALSE, results='hide'} -->
+<!-- posibles_falsificaciones <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx",  -->
+<!--     sheet = "posibles_falsificaciones") -->
+<!-- ``` -->
+
+<!--  ```{r echo=F, message=FALSE, warning=FALSE} -->
+<!--   DT::datatable(posibles_falsificaciones, class = 'cell-border stripe', extensions = 'Buttons', -->
+<!--                 options = list( -->
+<!--                   dom = 'Bfrtip', -->
+<!--                   buttons = c('csv', 'excel') -->
+<!--                 )) -->
+<!--  ``` -->
+
+Replicando la tabla 1 del paper de Hong & Pak (2017), corrigiendo por *outliers* y actualizando los precios, el resultado es el siguiente:
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+tabla_1_expo <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "tabla_1_expo")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(tabla_1_expo, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+### Soja con destino a Estados Unidos
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/expo soja eeuu empresa.html")
+```
+
+En los dos apartados subsiguientes se analizarán gráficamente dos casos más: del trigo y del maíz.
+
+
+
+## Caso trigo
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref trigo pais.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+tabla_1_trigo <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "trigo outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(tabla_1_trigo, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo trigo boxplot capitalizado.html")
+```
+
+## Caso Maíz
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref maiz pais.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+tabla_1_maiz <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "maiz outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(tabla_1_maiz, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo maiz boxplot capitalizado.html")
+```
+
+## Caso aceite de soja
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref aceite pais.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+tabla_aceite <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "aceite outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(tabla_aceite, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo aceite boxplot capitalizado.html")
+```
+
+
+
+## Caso harina y pellets de soja
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref harina pais.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+tabla_harina <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "harina outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(tabla_harina, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo harina boxplot capitalizado.html")
+```
+
+
+## Caso biodisel
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref biodisel pais.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+tabla_biodisel <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "biodisel outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(tabla_biodisel, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/Expo biodisel boxplot capitalizado.html")
+```

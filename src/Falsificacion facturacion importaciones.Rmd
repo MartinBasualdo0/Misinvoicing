@@ -1,0 +1,88 @@
+---
+title: 'Falsificación de facturación: importaciones'
+author: "Martín Basualdo"
+date: "Septiembre 2022"
+output:
+    html_document:
+      toc: true
+      toc_depth: 4
+      number_sections: true
+      toc_float: 
+        collapsed: false
+        smooth_scroll: false
+fontsize: 15pt
+sansfont: Georgia
+---
+
+\tableofcontents
+
+```{=html}
+<style>
+body {
+text-align: justify}
+</style>
+```
+
+# Una nota metodológica
+
+Los dato obtenidos fueron extraídos de la base de *oracle*. Cada fila (observación) representa una agrupación de documentos que fueron "oficializados" en el mismo día, mes y año, con mismo país de destino (exportaciones) u origen (importaciones), y por la misma empresa (cuit). Esto fue hecho debido a que hay varios documentos que se oficializan en el mismo día, con igual país de destino y por la misma empresa. Su desagregación, considero, no contribuye al análisis.
+
+Para obtener un precio de referencia mensual, se agruparon los datos a dicha frecuencia, sumándose los montos FOB (tanto para exportaciones como para importaciones) y los pesos netos. Posteriormente, se obtiene el ratio de ambos, cuyo resultado es el precio unitario. En aras de construir un *boxplot* que compare los precios declarados de las transacciones, éstos se capitalizaron por el precio de referencia al último mes disponible. La fórmula utilizada es la siguiente:
+
+$$Precio_{final}=Precio_t*\frac{Precio\ de\ referencia_{final}}{Precio\ de\ referencia_{t}}$$
+Es decir, al precio de la transacción se lo multiplica por la tasa de crecimiento del precio de referencia. Por ejemplo, si la soja en el momento $final$ es 50% mayor que en el momento de la transacción, $t$, el precio de la transacción es multiplicado por 1,5. De esta forma, todos los precios pueden ser comparados al estar valuados en un mismo período. En caso de omitir este paso, podría pensarse que el precio en el momento $t$ está subfacturado, o que en el momento $final$ está sobrefacturado, cuando eso no es verdad. Con esta metodología se capta la fluctuación de los precios.
+
+# Caso de la soja: exportaciones e importaciones
+
+## Importaciones
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref soja impo empresa.html")
+```
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/impo soja boxplot.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+importaciones_soja <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing//output/importaciones selecionadas.xlsx", 
+    sheet = "soja")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(importaciones_soja, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```  
+
+## Exportaciones
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/diferencia con ref soja pais.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+exportaciones_soja <- read_excel("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/exportaciones soja.xlsx", 
+    sheet = "soja outliers")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(exportaciones_soja, class = 'cell-border stripe', extensions = 'Buttons',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("C:/Users/mbasualdo/OneDrive - indecok/INDEC trabajos/15- bilateral/Misinvoicing/output/expo soja boxplot.html")
+```
+
+
+
+
+
+
