@@ -1,0 +1,177 @@
+---
+title: "Análisis gráfico de outliers: a nivel documento"
+author: "Martín Basualdo y Luca Gelmini"
+date: "26/9/2022"
+output:
+    html_document:
+      toc: true
+      toc_depth: 4
+      number_sections: false
+      toc_float: 
+        collapsed: false
+        smooth_scroll: false
+fontsize: 15pt
+sansfont: Georgia
+---
+\tableofcontents
+
+```{=html}
+<style>
+body {
+text-align: justify}
+</style>
+```
+
+# Una nota metodológica para el *violin plot*
+
+Los datos obtenidos fueron extraídos de la base de *oracle*. Cada fila (observación) representa un documento ("oficializado" para importaciones y "cumplido conforme" para exportaciones) en el mismo día, mes y año, con mismo país de destino (exportaciones) u origen (importaciones), y por la misma empresa (cuit). El producto está desagregado por NCM y SIM. También se incluye el número de ítem "SEC".
+
+Para obtener un precio de referencia mensual, se agruparon los datos a dicha frecuencia, sumándose los montos FOB (tanto para exportaciones como para importaciones) y los pesos netos. Posteriormente, se obtiene el ratio de ambos, cuyo resultado es el precio unitario. En aras de construir un *violin plot* que compare los precios declarados de las transacciones, éstos se capitalizaron por el precio de referencia al último mes disponible. La fórmula utilizada es la siguiente:
+
+$$Precio_{final}=Precio_t*\frac{Precio\ de\ referencia_{final}}{Precio\ de\ referencia_{t}}$$
+Es decir, al precio de la transacción se lo multiplica por la tasa de crecimiento del precio de referencia. Por ejemplo, si la soja en el momento $final$ es 50% mayor que en el momento de la transacción, $t$, el precio de la transacción es multiplicado por 1,5. De esta forma, todos los precios pueden ser comparados al estar valuados en un mismo período. En caso de omitir este paso, podría pensarse que el precio en el momento $t$ está subfacturado, o que en el momento $final$ está sobrefacturado, cuando eso no es verdad. Con esta metodología se capta la fluctuación de los precios.
+
+# Poroto de soja
+
+Se analzará igual a los 5 productos seleccionados: Primero un gráfico de puntos sin filtro alguno. Segundo una tabla que ordena de mayor a menor el flete por tonelada importada que contiene todos los datos que permitirían ubicar a la transacción. Por último, un *violin plot* con el top 5 de países de destino, simplemente por el hecho de que se ve bonito.
+
+Para el caso del poroto de soja existen 3 claros casos de outliers, con un fob por tonelada mayor a $4.000.
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo soja completo.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+poroto <- read_excel("../output/exportaciones_completo.xlsx", 
+    sheet = "soja")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(poroto, class = 'cell-border stripe', extensions = 'Buttons',
+               caption = 'Tabla 1: Poroto de soja',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+``` 
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo soja violin.html")
+```
+
+# Aceite de soja
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo aceite_soja completo.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+aceite <- read_excel("../output/exportaciones_completo.xlsx", 
+    sheet = "aceite_soja")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(aceite, class = 'cell-border stripe', extensions = 'Buttons',
+               caption = 'Tabla 2: aceite de soja',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+``` 
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo aceite_soja violin.html")
+```
+
+
+# Harina de soja
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo harina_soja completo.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+harina_soja <- read_excel("../output/exportaciones_completo.xlsx", 
+    sheet = "harina_soja")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(harina_soja, class = 'cell-border stripe', extensions = 'Buttons',
+               caption = 'Tabla 3: harina de soja',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+``` 
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo harina_soja violin.html")
+```
+
+# Trigo
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo trigo completo.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+trigo <- read_excel("../output/exportaciones_completo.xlsx", 
+    sheet = "trigo")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(trigo, class = 'cell-border stripe', extensions = 'Buttons',
+               caption = 'Tabla 4: trigo',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+``` 
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo trigo violin.html")
+```
+
+# Maíz
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo maiz completo.html")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE, results='hide'}
+library(readxl)
+maiz <- read_excel("../output/exportaciones_completo.xlsx", 
+    sheet = "maiz")
+```
+
+```{r echo=F, message=FALSE, warning=FALSE}
+ DT::datatable(maiz, class = 'cell-border stripe', extensions = 'Buttons',
+               caption = 'Tabla 5: maiz',
+               options = list(
+                 dom = 'Bfrtip',
+                 buttons = c('csv', 'excel')
+               ))
+``` 
+
+```{r echo=F, message=FALSE, warning=FALSE}
+htmltools::includeHTML("../output/expo maiz violin.html")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

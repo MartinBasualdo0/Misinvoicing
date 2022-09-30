@@ -1,60 +1,28 @@
-%let p_nomen = 12019000;
-
 proc sql;
 /*Esto es histório*/
 create table work.expo1 as
 select
 
-a.fech_aaaa,
-a.fech_mm,
-a.CANIO,
-a.ANA,
-a.DEST,
-a.REG,
-a.CANIO||a.ANA||a.DEST||a.REG as docu,
+/*a.fech_aaaa,*/
+/*a.fech_mm,*/
+/*a.CANIO,*/
+/*a.ANA,*/
+/*a.DEST,*/
+/*a.REG,*/
+/*a.DIGMARIA,*/
+a.CANIO||a.ANA||a.DEST||a.REG||a.DIGMARIA as docu,
 a.sec,
 a.pais,
 a.cuit,
 a.cnro_enmienda,
 a.nomen,
+a.sim,
 a.pnet,
 a.val_dol
 
 from secexh.ce_tx3a a
 
 where a.fech_aa between '21' and '22' 
-/*Soja*/
-and ((a.CCOD_CAPI= '12'
-and a.CCOD_PART = '01'
-and a.CCOD_SUBP = '90'
-and a.CNOMEN = '00')
-/*Trigo: 10019900*/
-or (a.CCOD_CAPI= '10'
-and a.CCOD_PART = '01'
-and a.CCOD_SUBP = '99'
-and a.CNOMEN = '00')
-/*aceite soja: 15071000*/
-or (a.CCOD_CAPI= '15'
-and a.CCOD_PART = '07'
-and a.CCOD_SUBP = '10'
-and a.CNOMEN = '00')
-/*pellets soja: 23040010*/
-or (a.CCOD_CAPI= '23'
-and a.CCOD_PART = '04'
-and a.CCOD_SUBP = '00'
-and a.CNOMEN = '10')
-/*biodisel: 38260000*/
-or (a.CCOD_CAPI= '38'
-and a.CCOD_PART = '26'
-and a.CCOD_SUBP = '00'
-and a.CNOMEN = '00')
-/*Maiz: 10059010*/
-or (a.CCOD_CAPI= '10'
-and a.CCOD_PART = '05'
-and a.CCOD_SUBP = '90'
-and a.CNOMEN = '10'))
-
-
 
 ;quit;
 
@@ -68,10 +36,11 @@ b.canio,
 b.ccod_ana,
 b.ccod_dest,
 b.cnro_doc,
-b.canio||b.ccod_ana||b.ccod_dest||b.cnro_doc as docu
+b.cdig,
+b.canio||b.ccod_ana||b.ccod_dest||b.cnro_doc||b.cdig as docu
 
 from secex.ce_cara_expo b
-where b.canio between '20' and '22'
+where b.canio between '19' and '22'
 
 /*Es una trampita para buscar más rápido*/
 
@@ -109,17 +78,18 @@ tiene q contener las mismas obs*/
 ;quit;
 
 proc sql;
-create table work.expo_doc as
+create table work.expo_doc_total as
 /*Existen operaciones que nada más se distinguen por número de documento*/
 select distinct
 a.dia,
 a.mes,
 a.anio, 
-a.cuit,
+a.cuit as cuit,
 c.crazon_social as empresa,
-a.cnro_enmienda,
-a.nomen, 
-d.CDESCRI_RED as nomen_descri,
+a.cnro_enmienda as enmienda,
+a.nomen as ncm, 
+d.CDESCRI_RED as ncm_descri,
+a.sim as sim,
 a.pdest_final as pais,
 b.cdescri as pais_descri,
 sum(a.val_dol) as fob,
@@ -145,14 +115,62 @@ c.crazon_social,
 a.cnro_enmienda,
 a.nomen,
 d.CDESCRI_RED, 
+a.sim,
 a.pdest_final,
 b.cdescri
 ;quit;
 
-PROC export data= work.expo_doc
+proc sql;
+create table work.expo_doc_completo as
+/*Existen operaciones que nada más se distinguen por número de documento*/
+select distinct
+a.dia,
+a.mes,
+a.anio, 
+a.cuit as cuit,
+c.crazon_social as empresa,
+a.cnro_enmienda as enmienda,
+a.nomen as ncm, 
+d.CDESCRI_RED as ncm_descri,
+a.sim as sim,
+a.pdest_final as pais,
+b.cdescri as pais_descri,
+a.docu as docu,
+a.sec as sec,
+a.val_dol as fob,
+a.pnet as pnet
+
+from expo4 a
+left join secex.ce_pais b
+	on (a.pdest_final=b.ccod_pais)
+
+left join secexh.ce_empresa c
+	on (a.cuit = c.ccuit_empre)
+
+ left join SECEXH.CE_CENICE_ENMIENDA d
+	on (a.cnro_enmienda = d.cnro_enmienda
+	and a.nomen = d.ccod_capi||d.ccod_part||d.ccod_subp||d.cnomen)
+
+;quit;
+
+PROC export data= work.expo_doc_total
 DBMS=CSV
-outfile = "/srv/sas/secex/home/mbasualdo/expo_doc.csv"
+outfile = "/srv/sas/secex/home/mbasualdo/expo_doc_total.csv"
 replace ;
 ;
+
+PROC export data= work.expo_doc_completo
+DBMS=CSV
+outfile = "/srv/sas/secex/home/mbasualdo/expo_doc_completo.csv"
+replace ;
+;
+/*data _null_;*/
+/*    data _null_;*/
+/*    fname="tempfile";*/
+/*    rc=filename(fname,  "/srv/sas/secex/home/mbasualdo/fletes_impo_mt_uso_zona_&p_aniod._&p_anioh._1_&p_mes..xlsx.bak");*/
+/*    if rc = 0 and fexist(fname) then*/
+/*       rc=fdelete(fname);*/
+/*    rc=filename(fname);*/
+/*run;*/
 
 

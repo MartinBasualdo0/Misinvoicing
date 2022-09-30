@@ -4,55 +4,26 @@ proc sql;
 /*Histórico*/
 create table work.impo1 as 
 select
-a.fech_aaaa,
-a.fech_mm,
-a.CANIO,
-a.ANA,
-a.DEST,
-a.REG,
-a.CANIO||a.ANA||a.DEST||a.REG as docu,
+/*a.fech_aaaa,*/
+/*a.fech_mm,*/
+/*a.CANIO,*/
+/*a.ANA,*/
+/*a.DEST,*/
+/*a.REG,*/
+a.CANIO||a.ANA||a.DEST||a.REG||a.DIGMARIA as docu,
 a.sec,
 a.porg as pais,
 a.cuit,
 a.cnro_enmienda,
 a.nomen,
+a.sim,
 a.pnet,
-a.val_dol as cif,
-a.fob_dol as fob
+a.val_dol as cif
+/*a.fob_dol as fob*/
 
 from secexh.ce_tm3a a
 
 where a.fech_aa between '21' and '22' 
-/*Soja*/
-and a.CCOD_CAPI= '12'
-and a.CCOD_PART = '01'
-and a.CCOD_SUBP = '90'
-and a.CNOMEN = '00'
-/*Trigo: 10019900*/
-or (a.CCOD_CAPI= '10'
-and a.CCOD_PART = '01'
-and a.CCOD_SUBP = '99'
-and a.CNOMEN = '00')
-/*aceite soja: 15071000*/
-or (a.CCOD_CAPI= '10'
-and a.CCOD_PART = '05'
-and a.CCOD_SUBP = '90'
-and a.CNOMEN = '10')
-/*pellets soja: 23040010*/
-or (a.CCOD_CAPI= '23'
-and a.CCOD_PART = '04'
-and a.CCOD_SUBP = '00'
-and a.CNOMEN = '10')
-/*biodisel: 38260000*/
-or (a.CCOD_CAPI= '38'
-and a.CCOD_PART = '26'
-and a.CCOD_SUBP = '00'
-and a.CNOMEN = '00')
-/*Maiz: 10059010*/
-or (a.CCOD_CAPI= '10'
-and a.CCOD_PART = '05'
-and a.CCOD_SUBP = '90'
-and a.CNOMEN = '10')
 
 ;quit;
 
@@ -64,26 +35,29 @@ t1.CANIO,
 t1.CCOD_ANA, 
 t1.CCOD_DEST, 
 t1.CNRO_DOC, 
-t1.CANIO||t1.CCOD_ANA||t1.CCOD_DEST||t1.CNRO_DOC as docou,
+t1.cdig,
+t1.canio||t1.ccod_ana||t1.ccod_dest||t1.cnro_doc||t1.cdig as docu,
 t1.FINICIO
+
 FROM SECEX.CE_CARA_IMPO t1
-where t1.canio between '20' and '22'
+where t1.canio between '19' and '22'
 ;quit;
 
 proc sql;
 create table work.impo3 as
-select t1.CANIO, 
-          t1.CCOD_ANA, 
-          t1.CCOD_DEST, 
-          t1.CNRO_DOC, 
-		  t1.docou as docu,
+select 
+/*t1.CANIO, */
+/*          t1.CCOD_ANA, */
+/*          t1.CCOD_DEST, */
+/*          t1.CNRO_DOC, */
+		  t1.docu as docu,
           year(datepart(t1.FINICIO)) as anio_ofic,
 		  month(datepart(t1.FINICIO)) as mes_ofic,
 		  day(datepart(t1.finicio)) as dia_ofic
  
  from work.impo2 t1
 
- where t1.docou in (select b.docu from work.impo1 b)
+ where t1.docu in (select b.docu from work.impo1 b)
 
  ;quit;
 
@@ -108,7 +82,7 @@ left join secex.ce_pais c
 tiene q contener las mismas obs*/
 ;quit;
 
-  proc sql;
+proc sql;
  create table work.impo_item as
 select distinct
 a.dia,
@@ -116,13 +90,13 @@ a.mes,
 a.anio, 
 a.cuit,
 c.crazon_social as empresa,
-a.cnro_enmienda,
-a.nomen, 
-d.CDESCRI_RED as nomen_descri,
+a.cnro_enmienda as enmienda,
+a.nomen as ncm, 
+d.CDESCRI_RED as ncm_descri,
+a.sim as sim,
 a.pdest_final as pais,
 b.cdescri as pais_descri,
 sum(a.cif) as cif,
-sum(a.fob) as fob,
 sum(a.pnet) as pnet
 
  
@@ -145,8 +119,49 @@ a.cuit,
 c.crazon_social,
 a.cnro_enmienda,
 a.nomen,
+a.sim,
 d.CDESCRI_RED, 
 a.pdest_final,
 b.cdescri
  ;quit;
+
+proc sql;
+create table work.impo_doc_completo as
+/*Existen operaciones que nada más se distinguen por número de documento*/
+select
+a.dia,
+a.mes,
+a.anio, 
+a.cuit as cuit,
+c.crazon_social as empresa,
+a.cnro_enmienda as enmienda,
+a.nomen as ncm, 
+d.CDESCRI_RED as ncm_descri,
+a.sim as sim,
+a.pdest_final as pais,
+b.cdescri as pais_descri,
+a.docu as docu,
+a.sec as sec,
+a.cif as cif,
+a.pnet as pnet
+
+from impo4 a
+left join secex.ce_pais b
+	on (a.pdest_final=b.ccod_pais)
+
+left join secexh.ce_empresa c
+	on (a.cuit = c.ccuit_empre)
+
+ left join SECEXH.CE_CENICE_ENMIENDA d
+	on (a.cnro_enmienda = d.cnro_enmienda
+	and a.nomen = d.ccod_capi||d.ccod_part||d.ccod_subp||d.cnomen)
+
+;quit;
+
+
+ PROC export data= work.impo_doc_completo
+DBMS=CSV
+outfile = "/srv/sas/secex/home/mbasualdo/impo_doc_completo.csv"
+replace ;
+;
 
