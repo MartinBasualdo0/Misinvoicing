@@ -63,7 +63,8 @@ def ncm_filtro(df,ncm):
 
 # Devuelve códigos sim derivados de las NCM
 def sim_unique(ncm):
-    return df_producto[df_producto.ncm==ncm].sim.unique()
+     ncm=str(ncm)
+     return df_producto[df_producto.ncm==ncm].sim.unique()
 
 #Filtra la base por NCM y código sim
 def sim_filtro(df,ncm, sim='default', pais='default'):
@@ -90,8 +91,10 @@ def get_top_paises(df, n_paises='default'):
 def get_top_empresas(df, n_empresas='default'):
     if n_empresas=='default': return df
     else:
-        top_df=df.groupby(['cuit','empresa'],as_index=False).sum().sort_values('fob',ascending=False).empresa.unique()[:n_empresas]
-        return df[df.empresa.isin(top_df)].reset_index(drop=True)
+        top_df=df.groupby(['cuit'],as_index=False).sum().sort_values('fob',ascending=False).cuit.unique()[:n_empresas]
+        df=df[df.cuit.isin(top_df)].reset_index(drop=True)
+        df.cuit=df.cuit.astype(str)
+        return df
 
 #Recorta la descripcion de la nomenclatura para que no sea muy larga    
 def get_descri_nomen(df, palabras:int = 15):
@@ -284,7 +287,7 @@ def plot_precio(df,ncm,y='diferencia_ref',sim='default', n_paises='default', n_e
      df=get_top_empresas(df,n_empresa)
      df.pais_descri=df.pais_descri.apply(recortar_descri)
      df.empresa=df.empresa.apply(recortar_descri)
-     producto=df.ncm_descri.unique()[0][:40]
+     # producto=df.ncm_descri.unique()[0][:40]
      ncm=df.ncm.unique()[0]
      if sim=='default' and n_paises=='default':
           title_text=f'FOB por tonelada exportada {desde}-{hasta} de: <br>"{get_descri_nomen(df,9)}"<br>NCM:{ncm}<br> <sup> Precio de referencia a partir de datos mensuales'     
@@ -344,7 +347,9 @@ def plot_precio(df,ncm,y='diferencia_ref',sim='default', n_paises='default', n_e
      precio_soja_plot.update_yaxes(title_text= y_title, 
                                    # range=[df['diferencia_ref'].min()-100,df['diferencia_ref'].max()+100]
                                    )
-     precio_soja_plot.update_xaxes(title_text='',type='category')
+     precio_soja_plot.update_xaxes(title_text='',type='category',
+                                   # showticklabels=True, ticks='outside'
+                                   )
 
      precio_soja_plot.update_traces(marker=dict(size=12,
                                    line=dict(width=2,

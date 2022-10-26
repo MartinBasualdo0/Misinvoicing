@@ -1,7 +1,7 @@
 ---
 title: "Análisis gráfico de outliers: a nivel documento"
 author: "Martín Basualdo y Luca Gelmini"
-date: "26/9/2022"
+date: "14/10/2022"
 output:
     html_document:
       toc: true
