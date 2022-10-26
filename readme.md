@@ -34,7 +34,7 @@ Abrir la carpeta descomprimida (no importa que vean todas las carpetas de la fot
 
 ![](assets/2-ubicacion%20carpeta.png)
 
-Abrir el programa "aplicacion.ipynb
+Abrir el programa "aplicacion.ipynb"
 ![](assets/3-%20aplicion%20ipynb.png)
 
 Seleccionar el "kernel" a utilizar, que debe tener el nombre del ambiente creado ("outliers")
