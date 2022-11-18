@@ -9,7 +9,7 @@ import plotly.express as px
 df_producto=pd.read_csv('./data/impo_doc_completo.csv',
                           dtype={'ncm':'str','CUIT':'str','empresa':'str','enmienda':'str','ncm_descri':'str','sim':'str','pais':'str','pais_descri':'str','dia':'str','mes':'str','anio':'str','sec':str}
             )
-
+ncm_lista = df_producto.ncm.unique()
 # %% [markdown]
 # # Manipulación de los datos: "Wrangling"
 
@@ -61,34 +61,39 @@ def ncm_filtro(df,ncm):
     df=df.sort_values(['anio','mes','dia'],ascending=True).reset_index(drop=True)
     return precio_ref(df)
 
+def pais_unique(ncm):
+     ncm=str(ncm)
+     return df_producto[df_producto.ncm==ncm].pais.unique()
+
 # Devuelve códigos sim derivados de las NCM
 def sim_unique(ncm):
     # return df.sim.unique()
     return df_producto[df_producto.ncm==ncm].sim.unique()
 
 #Filtra la base por NCM y código sim
-def sim_filtro(df,ncm, sim='default', pais='default'):
-    if sim=='default' and pais=='default':
+def sim_filtro(df,ncm, sim=None, pais=None):
+     ncm=str(ncm)
+     if sim==None and pais==None:
         return ncm_filtro(df,ncm)
-    elif sim=='default' and pais!='default':
-        pais=pais.capitalize()
-        return ncm_filtro(df,ncm)[ncm_filtro(df,ncm).pais_descri==pais].reset_index(drop=True)
-    elif sim!='default' and pais=='default':
-        return ncm_filtro(df,ncm)[ncm_filtro(df,ncm).sim==sim].reset_index(drop=True)
-    else:
-        pais=pais.capitalize()
-        return ncm_filtro(df,ncm)[(ncm_filtro(df,ncm).sim==sim)&(ncm_filtro(df,ncm).pais_descri==pais)].reset_index(drop=True)
+     elif sim==None and pais!=None:
+          pais=pais.capitalize()
+          return ncm_filtro(df,ncm)[ncm_filtro(df,ncm).pais_descri==pais].reset_index(drop=True)
+     elif sim!=None and pais==None:
+          return ncm_filtro(df,ncm)[ncm_filtro(df,ncm).sim==sim].reset_index(drop=True)
+     else:
+          pais=pais.capitalize()
+          return ncm_filtro(df,ncm)[(ncm_filtro(df,ncm).sim==sim)&(ncm_filtro(df,ncm).pais_descri==pais)].reset_index(drop=True)
 
 #Filtra por el top N países      
-def get_top_paises(df, n_paises='default'):
-    if n_paises=='default': return df
+def get_top_paises(df, n_paises=None):
+    if n_paises==None: return df
     else:
         top_df=df.groupby(['pais','pais_descri'],as_index=False).sum().sort_values('cif',ascending=False).pais_descri.unique()[:n_paises]
         return df[df.pais_descri.isin(top_df)].reset_index(drop=True)
 
 #Filtra por el top N empresas  
-def get_top_empresas(df, n_empresas='default'):
-    if n_empresas=='default': return df
+def get_top_empresas(df, n_empresas=None):
+    if n_empresas==None: return df
     else:
         top_df=df.groupby(['cuit','empresa'],as_index=False).sum().sort_values('cif',ascending=False).empresa.unique()[:n_empresas]
         return df[df.empresa.isin(top_df)].reset_index(drop=True)
@@ -126,7 +131,7 @@ def get_descri_nomen(df, palabras:int = 15):
 # - pais es el pais de destino que se quiera analizar. Filtra la base y muestra los resultados para ese país únicamente. Opcional.
 
 # %%
-def precio_violinplot_capitalizado(df,ncm,sim='default', n_paises='default', max_range=None):
+def precio_violinplot_capitalizado(df,ncm,sim=None, n_paises=None, max_range=None):
      ncm=str(ncm)
      df=sim_filtro(df,ncm,sim)
      df=get_top_paises(df,n_paises)
@@ -135,16 +140,16 @@ def precio_violinplot_capitalizado(df,ncm,sim='default', n_paises='default', max
      ncm=df.ncm.unique()[0]
      category_orders={}
      # color=[0]*len(df.pais)
-     if sim=='default' and n_paises=='default':
+     if sim==None and n_paises==None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,9)}"<br>NCM:{ncm}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales'     
-     elif sim=='default' and n_paises!='default':
+     elif sim==None and n_paises!=None:
           # color='pais_descri'
           category_orders={'pais_descri': df.groupby(['pais','pais_descri'],as_index=False).sum().sort_values('cif',ascending=False).pais_descri.unique()}
           # x='pais_descri'
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales, top {n_paises} países'
-     elif sim!='default' and n_paises=='default':
+     elif sim!=None and n_paises==None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}-{sim}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales'
-     elif sim!='default' and n_paises!='default':
+     elif sim!=None and n_paises!=None:
           color='pais_descri'
           category_orders={'pais_descri': df.groupby(['pais','pais_descri'],as_index=False).sum().sort_values('cif',ascending=False).pais_descri.unique()}
           # x='pais_descri'
@@ -208,19 +213,19 @@ def precio_violinplot_capitalizado(df,ncm,sim='default', n_paises='default', max
      return violinplot
 
 # %%
-def precio_boxplot_capitalizado(df,ncm,sim='default', n_paises='default',max_range=None):
+def precio_boxplot_capitalizado(df,ncm,sim=None, n_paises=None,max_range=None):
      ncm=str(ncm)
      df=sim_filtro(df,ncm,sim)
      df=get_top_paises(df,n_paises)
      producto=df.ncm_descri.unique()[0][:40]
      ncm=df.ncm.unique()[0]
-     if sim=='default' and n_paises=='default':
+     if sim==None and n_paises==None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,9)}"<br>NCM:{ncm}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales'     
-     elif sim=='default' and n_paises!='default':
+     elif sim==None and n_paises!=None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales, top {n_paises} países'
-     elif sim!='default' and n_paises=='default':
+     elif sim!=None and n_paises==None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}-{sim}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales'
-     elif sim!='default' and n_paises!='default':
+     elif sim!=None and n_paises!=None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}-{sim}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales, top {n_paises} países'
      if max_range:
           df = df[df.fob_unitario_ton_capit<max_range]    
@@ -275,7 +280,7 @@ def precio_boxplot_capitalizado(df,ncm,sim='default', n_paises='default',max_ran
 
      return precio_soja_boxplot
 
-def plot_precio(df,ncm,y='diferencia_ref',sim='default', n_paises='default', n_empresa='default' ,color='pais_descri',pais='default',max_range=None):
+def plot_precio(df,ncm,y='diferencia_ref',sim=None, n_paises=None, n_empresa=None ,color='pais_descri',pais=None,max_range=None):
      '''color=pais_descri o empresa
      y='diferencia_ref' o cif_unitario_ton'''
      ncm=str(ncm)
@@ -286,18 +291,18 @@ def plot_precio(df,ncm,y='diferencia_ref',sim='default', n_paises='default', n_e
      df.empresa=df.empresa.apply(recortar_descri)
      producto=df.ncm_descri.unique()[0][:40]
      ncm=df.ncm.unique()[0]
-     if sim=='default' and n_paises=='default':
+     if sim==None and n_paises==None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,9)}"<br>NCM:{ncm}<br> <sup> Precio de referencia a partir de datos mensuales'     
-     elif sim=='default' and n_paises!='default':
+     elif sim==None and n_paises!=None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}<br> <sup> Precio de referencia a partir de datos mensuales, top {n_paises} países'
-     elif sim!='default' and n_paises=='default':
+     elif sim!=None and n_paises==None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}-{sim}<br> <sup> Precio de referencia a partir de datos mensuales'
-     elif sim!='default' and n_paises!='default':
+     elif sim!=None and n_paises!=None:
           title_text=f'CIF por tonelada importada {desde}-{hasta} de: <br>"{get_descri_nomen(df,12)}"<br>NCM:{ncm}-{sim}<br> <sup> Precio de referencia a partir de datos mensuales, top {n_paises} países'
      
-     if n_empresa != 'default':
+     if n_empresa != None:
           title_text=title_text+f', top {n_empresa} empresas'
-     if pais != 'default':
+     if pais != None:
           title_text=title_text+f'. Origen: {pais.capitalize()}'
      
      if y== 'diferencia_ref':  y_title='Diferencia en USD'

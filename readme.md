@@ -16,7 +16,7 @@ Con el WINSCP transfieran los dos csv a la carpeta "data". Es importante que sea
 
 Tienen instalado anaconda. En el buscador de windows busquen "Anaconda Prompt (Anaconda 3)", abranlo y escriba el siguiente código (enter para "proceder"):
 
-`conda create -n outliers`
+`conda create -n outliers pip`
 
 Crearon un ambiente llamado "outliers", pero le faltan los paquetes. Primero se activa el ambiente, luego se instala.
 
