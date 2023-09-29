@@ -22,7 +22,7 @@ a.val_dol
 
 from secexh.ce_tx3a a
 
-where a.fech_aa between '21' and '22' 
+where a.fech_aa between '22' and '23' 
 
 ;quit;
 
@@ -40,7 +40,7 @@ b.cdig,
 b.canio||b.ccod_ana||b.ccod_dest||b.cnro_doc||b.cdig as docu
 
 from secex.ce_cara_expo b
-where b.canio between '19' and '22'
+where b.canio between '19' and '23'
 
 /*Es una trampita para buscar más rápido*/
 

@@ -23,7 +23,7 @@ a.val_dol as cif
 
 from secexh.ce_tm3a a
 
-where a.fech_aa between '21' and '22' 
+where a.fech_aa between '22' and '23' 
 
 ;quit;
 
@@ -40,7 +40,7 @@ t1.canio||t1.ccod_ana||t1.ccod_dest||t1.cnro_doc||t1.cdig as docu,
 t1.FINICIO
 
 FROM SECEX.CE_CARA_IMPO t1
-where t1.canio between '19' and '22'
+where t1.canio between '19' and '23'
 ;quit;
 
 proc sql;

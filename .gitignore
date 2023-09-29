@@ -1,5 +1,7 @@
-
+.copy.sh
 *.xlsx
 *.html
 *.csv
 *.pdf
+.venv
+*.pyc

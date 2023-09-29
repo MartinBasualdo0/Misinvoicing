@@ -7,7 +7,7 @@ import plotly.express as px
 
 # %%
 df_producto=pd.read_csv('./data/impo_doc_completo.csv',
-                          dtype={'ncm':'str','CUIT':'str','empresa':'str','enmienda':'str','ncm_descri':'str','sim':'str','pais':'str','pais_descri':'str','dia':'str','mes':'str','anio':'str','sec':str}
+                          dtype={'ncm':str,'cuit':str,'empresa':str,'enmienda':str,'sim':str,'pais':str,'dia':str,'mes':str,'anio':str,'docu':str,'sec':str}
             )
 ncm_lista = df_producto.ncm.unique()
 # %% [markdown]

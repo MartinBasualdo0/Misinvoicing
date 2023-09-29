@@ -61,6 +61,10 @@ app.layout = html.Div([
             dcc.Graph(id='grafico0',className= 'grafico'),
         ], className='grid-container'),
         
+        html.Div([
+            dcc.Graph(id='grafico1',className= 'grafico'),
+        ], className='grid-container'),
+        
     # html.Div([dash_table.DataTable(
     #                                style_cell={'textAlign':'left'},
     #                                style_data={
@@ -146,7 +150,38 @@ def plot(comercio, ncm_input, sim_input,color_input,top,
                 # pais=pais_input, # Por si se quiere ver un país en particular, pierde el sentido el n_paises
                 max_range=max_range_input  # Por si se quiere poner un máximo al eje Y, muy bueno para evitar ver los outliers
     )
-        
+    
+@app.callback(
+    Output('grafico1','figure'),
+    Input("que-comercio","value"),
+    Input("dropdown-ncm",'value'),
+    Input("dropdown-sim",'value'),
+    Input("que-color","value"),
+    Input("cuantos-top","value"),
+    # Input('dropdown-pais','value'),
+    Input("precio-top","value")
+    )
+def plot_boxplot(comercio, ncm_input, sim_input,color_input,top,
+        #  pais_input,
+         max_range_input):
+    if comercio == "expo": 
+        clasificacion = "fob"
+        tipo = expo
+    if comercio == "impo": 
+        clasificacion = "cif"
+        tipo = impo
+    if color_input == "empresa":
+        n_empresa_input = top
+        n_pais_input = None
+    if color_input == "pais_descri":
+        n_empresa_input = None
+        n_pais_input = top
+    return tipo.precio_boxplot_capitalizado(df=tipo.df_producto,
+                                            sim=sim_input,
+                                            ncm=ncm_input ,
+                                            n_empresa=n_empresa_input,
+                                            n_paises=n_pais_input, 
+                                            max_range=max_range_input)        
 # @app.callback(
 #     Output("tabla-html",'data'),
 #     Output("tabla-html","columns"),

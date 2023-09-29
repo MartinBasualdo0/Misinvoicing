@@ -9,7 +9,8 @@ import plotly.express as px
 df_producto=pd.read_csv('./data/expo_doc_completo.csv', 
                         encoding='Latin-1',
                         # sep=';', 
-            dtype={'ncm':'str','CUIT':'str','empresa':'str','enmienda':'str','ncm_descri':'str','sim':'str','pais':'str','pais_descri':'str','dia':'str','mes':'str','anio':'str','sec':str}
+            dtype={'ncm':str,'cuit':str,'empresa':str,'enmienda':str,'sim':str,'pais':str,'dia':str,'mes':str,'anio':str,'sec':str,
+                'docu':str}
             )
 
 ncm_lista = df_producto.ncm.unique()
@@ -50,6 +51,7 @@ def recortar_descri(pais,largo=15):
 def precio_ref(df):
     df_mensual=df.groupby(['mes','anio'],as_index=False).sum().sort_values(['anio','mes'])
     df_mensual['fob_unitario_ton_ref']=df_mensual.fob/df_mensual.pnet*1000
+    df_mensual["fob_unitario_ton_ref_capi"] = df_mensual["fob_unitario_ton_ref"].iloc[-1]
     df=pd.merge(left=df,right=df_mensual[['anio','mes','fob_unitario_ton_ref']], on=['anio','mes'],how='left')
     df['fob_unitario_ton_capit']=df.fob_unitario_ton*df.fob_unitario_ton_ref.iloc[-1]/df.fob_unitario_ton_ref
     df['diferencia_ref']=df.fob_unitario_ton-df.fob_unitario_ton_ref
@@ -218,11 +220,19 @@ def precio_violinplot_capitalizado(df,ncm,sim=None, n_paises=None, max_range=Non
      return violinplot
 
 # %%
-def precio_boxplot_capitalizado(ncm,df=df_producto,sim=None, n_paises=None, max_range=None):
+def precio_boxplot_capitalizado(ncm,df=df_producto,sim=None, n_paises=None, n_empresa=None , pais=None,max_range=None):
+     # ncm=str(ncm)
+     # df=sim_filtro(df,ncm,sim)
+     # df=get_top_paises(df,n_paises)
+     # producto=df.ncm_descri.unique()[0][:40]
+     # ncm=df.ncm.unique()[0]
      ncm=str(ncm)
-     df=sim_filtro(df,ncm,sim)
+     df=sim_filtro(df,ncm,sim,pais)
      df=get_top_paises(df,n_paises)
-     producto=df.ncm_descri.unique()[0][:40]
+     df=get_top_empresas(df,n_empresa)
+     df.pais_descri=df.pais_descri.apply(recortar_descri)
+     df.empresa=df.empresa.apply(recortar_descri)
+     # producto=df.ncm_descri.unique()[0][:40]
      ncm=df.ncm.unique()[0]
      if sim==None and n_paises==None:
           title_text=f'FOB por tonelada exportada {desde}-{hasta} de: <br>"{get_descri_nomen(df,9)}"<br>NCM:{ncm}<br> <sup> Capitalizado al último precio disponible. Precio de referencia a partir de datos mensuales'     
